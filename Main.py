@@ -1,5 +1,14 @@
-from Vista import root
+# main.py
 
-# Punto de entrada de la aplicación
+# Importamos la clase vistaUi desde el módulo Vista
+from Vista.vistaUi import vistaUi
+
+def main():
+    # Crear una instancia de la clase vistaUi
+    app = vistaUi()
+
+    # Ejecutar el ciclo principal de la interfaz gráfica
+    app.get_root().mainloop()
+
 if __name__ == "__main__":
-    root.mainloop()
+    main()

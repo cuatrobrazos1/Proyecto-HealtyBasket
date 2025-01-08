@@ -1,4 +1,4 @@
-from Modelo import Modelos
+from Modelo.Modelos import Modelos
 import pandas as pd
 
 class Controlador:
