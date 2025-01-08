@@ -23,7 +23,6 @@ class ModelosScore:
         self.X_test = self.scaler.transform(self.X_test)
 
     def entrenar(self, nombre_modelo):
-        """Entrena y guarda el modelo especificado."""
         if nombre_modelo == 'Random Forest':
             modelo = RandomForestClassifier(random_state=42)
         elif nombre_modelo == 'Gradient Boosted Trees':
@@ -33,25 +32,19 @@ class ModelosScore:
         else:
             raise ValueError("Modelo no válido.")
 
+        # Entrenar el modelo
         modelo.fit(self.X_train, self.y_train)
 
         # Evaluar el modelo
         y_pred = modelo.predict(self.X_test)
         accuracy = accuracy_score(self.y_test, y_pred)
-        print(f"Accuracy del modelo {nombre_modelo}: {accuracy:.2f}")
-        print("Classification Report:")
-        print(classification_report(self.y_test, y_pred))
 
+        # Guardar información del modelo si es necesario
         modelo.columnas_entrenamiento = self.columnas
+        modelo_path = f"{nombre_modelo.replace(' ', '_')}.pkl"
+        joblib.dump(modelo, modelo_path)
 
-        guardar = input(f"¿Deseas guardar el modelo {nombre_modelo}? (s/n): ").strip().lower()
-        if guardar == 's':
-            modelo_path = f"{nombre_modelo.replace(' ', '_')}.pkl"
-            joblib.dump(modelo, modelo_path)
-            print(f"Modelo guardado en: {modelo_path}")
-        else:
-            print(f"Modelo {nombre_modelo} no se ha guardado.")
-
+        return accuracy
     def predecir(self, ruta_modelo):
         """Realiza predicciones usando el modelo cargado."""
         try:
