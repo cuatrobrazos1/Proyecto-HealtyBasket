@@ -1,7 +1,7 @@
 # main.py
 
 # Importamos la clase vistaUi desde el módulo Vista
-from Vista.vistaUi import vistaUi
+from Vista.vista import vistaUi
 
 def main():
     # Crear una instancia de la clase vistaUi

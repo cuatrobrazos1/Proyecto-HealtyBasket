@@ -29,6 +29,10 @@ class vistaUi:
         # Crear las pestañas
         self.notebook = ttk.Notebook(self.root)
 
+        # Pestaña de Inicio
+        self.frame_inicio = ttk.Frame(self.notebook)
+        self.notebook.add(self.frame_inicio, text="Inicio")
+
         # Pestaña de Entrenamiento
         self.frame_entrenamiento = ttk.Frame(self.notebook)
         self.notebook.add(self.frame_entrenamiento, text="Entrenamiento")
@@ -40,12 +44,25 @@ class vistaUi:
         self.notebook.pack(expand=True, fill="both")
 
         # Llamar a los métodos para crear las interfaces
+        self.crear_interfaz_inicio()
         self.crear_interfaz_entrenamiento()
         self.crear_interfaz_prediccion()
+
+        # Actualizar los modelos cuando la pestaña cambia
+        self.notebook.bind("<<NotebookTabChanged>>", self.actualizar_modelos)
 
     def cargar_archivo(self):
         ruta = filedialog.askopenfilename(title="Seleccionar archivo")
         return ruta
+
+    # -------------------------
+    # Contenido: Inicio
+    # -------------------------
+
+    def crear_interfaz_inicio(self):
+        # Este puede ser un espacio para mostrar alguna información general
+        label_inicio = ttk.Label(self.frame_inicio, text="Bienvenido a HealthyBasket")
+        label_inicio.pack(pady=20)
 
     # -------------------------
     # Contenido: Entrenamiento
@@ -98,42 +115,68 @@ class vistaUi:
     # -------------------------
 
     def ejecutar_prediccion(self):
+        # Obtener el modelo seleccionado
+        modelo_seleccionado = self.combo_modelo.get()
         ruta_modelo = self.entry_ruta_modelo.get()
         ruta_csv = self.entry_csv_prediccion.get()
+
         try:
-            resultados = self.controlador.predecir(ruta_modelo, ruta_csv)
+            if modelo_seleccionado == "Modelo Categoría":
+                resultados = self.controlador.predecir_modelo_categoria(ruta_modelo, ruta_csv)
+            elif modelo_seleccionado == "Modelo ScoreNutri":
+                resultados = self.controlador.predecir_scorenutri(ruta_modelo, ruta_csv)
+            else:
+                raise ValueError("Modelo no reconocido.")
+
             resultado_texto = "\n".join(
-                f"{row['Nombre']}: {row['Categoria_Predicha']}" for _, row in resultados.iterrows())
+                f"{row['Nombre']}: {row['Resultado_Predicho']}" for _, row in resultados.iterrows())
             self.label_estado_prediccion.config(text=resultado_texto)
         except Exception as e:
             self.label_estado_prediccion.config(text=f"Error: {str(e)}")
 
     def crear_interfaz_prediccion(self):
+        # Selección del modelo a predecir
+        self.label_modelo = ttk.Label(self.frame_prediccion, text="Seleccionar Modelo de Predicción:")
+        self.label_modelo.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+
+        self.combo_modelo = ttk.Combobox(self.frame_prediccion, values=[])
+        self.combo_modelo.grid(row=0, column=1, padx=10, pady=5)
+
         # Cargar modelo
         self.label_ruta_modelo = ttk.Label(self.frame_prediccion, text="Ruta del modelo:")
-        self.label_ruta_modelo.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        self.label_ruta_modelo.grid(row=1, column=0, padx=10, pady=5, sticky="w")
         self.entry_ruta_modelo = ttk.Entry(self.frame_prediccion, width=40)
-        self.entry_ruta_modelo.grid(row=0, column=1, padx=10, pady=5)
+        self.entry_ruta_modelo.grid(row=1, column=1, padx=10, pady=5)
         button_cargar_modelo = ttk.Button(self.frame_prediccion, text="Abrir",
                                           command=lambda: self.entry_ruta_modelo.insert(0, self.cargar_archivo()))
-        button_cargar_modelo.grid(row=0, column=2, padx=10, pady=5)
+        button_cargar_modelo.grid(row=1, column=2, padx=10, pady=5)
 
         # Cargar CSV para predicción
         self.label_csv_prediccion = ttk.Label(self.frame_prediccion, text="Archivo para predecir:")
-        self.label_csv_prediccion.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        self.label_csv_prediccion.grid(row=2, column=0, padx=10, pady=5, sticky="w")
         self.entry_csv_prediccion = ttk.Entry(self.frame_prediccion, width=40)
-        self.entry_csv_prediccion.grid(row=1, column=1, padx=10, pady=5)
+        self.entry_csv_prediccion.grid(row=2, column=1, padx=10, pady=5)
         button_cargar_csv = ttk.Button(self.frame_prediccion, text="Abrir",
                                        command=lambda: self.entry_csv_prediccion.insert(0, self.cargar_archivo()))
-        button_cargar_csv.grid(row=1, column=2, padx=10, pady=5)
+        button_cargar_csv.grid(row=2, column=2, padx=10, pady=5)
 
         # Botón para ejecutar predicción
         button_predecir = ttk.Button(self.frame_prediccion, text="Predecir", command=self.ejecutar_prediccion)
-        button_predecir.grid(row=2, column=1, pady=20)
+        button_predecir.grid(row=3, column=1, pady=20)
 
         # Estado de la predicción
         self.label_estado_prediccion = ttk.Label(self.frame_prediccion, text="")
-        self.label_estado_prediccion.grid(row=3, column=0, columnspan=3, padx=10, pady=5)
+        self.label_estado_prediccion.grid(row=4, column=0, columnspan=3, padx=10, pady=5)
+
+    def actualizar_modelos(self, event):
+        """Actualiza los modelos disponibles según la pestaña activa."""
+        if self.notebook.index(self.notebook.select()) == 1:  # Pestaña de Entrenamiento
+            self.combo_modelo['values'] = ["Modelo A", "Modelo B"]
+        elif self.notebook.index(self.notebook.select()) == 2:  # Pestaña de Predicción
+            self.combo_modelo['values'] = ["Modelo Categoría", "Modelo ScoreNutri"]
+
+        # Resetea el combobox
+        self.combo_modelo.set('')
 
     def get_root(self):
         return self.root  # Devuelve la instancia de la ventana principal
