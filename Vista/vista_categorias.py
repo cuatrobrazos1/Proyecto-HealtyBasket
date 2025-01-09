@@ -16,7 +16,7 @@ class vistaUi:
         self.root.geometry("600x400")
 
         # Cargar y mostrar el logo
-        self.logo_path = "logo_path.jpeg"
+        self.logo_path = "Vista/logo_path.jpeg"
         try:
             self.logo_image = Image.open(self.logo_path)
             self.logo_image = self.logo_image.resize((150, 150), Image.Resampling.LANCZOS)
